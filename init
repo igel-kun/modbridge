@@ -1,0 +1,19 @@
+#!/bin/sh
+module="modbridge"
+device="modbridge"
+mode="644"
+in_file=$(pwd)/filezilla.xml
+in_mask=$(pwd)/filezilla.conf
+out_mask=$(pwd)/ncftp.conf
+
+echo "inserting module $module ..."
+insmod ${module}.ko in_file=$in_file in_file_mask=$in_mask out_file_mask=$out_mask mb_debug=0 mb_io_debug=0 mb_parse_debug=0 $*
+major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
+
+echo "removing stale node..."
+rm -f /dev/$device
+echo "making new device node: /dev/$device [major $major]..."
+mknod /dev/$device c $major 0
+echo "setting permissions to $mode ..."
+chmod $mode /dev/$device
+
